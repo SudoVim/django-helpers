@@ -6,14 +6,14 @@ pyright:
 
 .PHONY: ruff-check
 ruff-check:
-	$(POETRY_RUN) ruff check
+	$(POETRY_RUN) ruff check --select I
 
 .PHONY: lint
 lint: ruff-check pyright
 
 .PHONY: format
 format:
-	$(POETRY_RUN) ruff check --select I
+	$(POETRY_RUN) ruff check --select I --fix
 	$(POETRY_RUN) ruff format
 
 .PHONY: ci
