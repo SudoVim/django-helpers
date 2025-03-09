@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, TypeVar
 
 from django.contrib import admin
 from django.db.models import Model
@@ -12,8 +12,10 @@ from typing_extensions import override
 
 from django_helpers.links import get_admin_add_url, get_admin_page
 
+M = TypeVar("M", bound=Model)
 
-class DHModelAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+
+class DHModelAdmin(admin.ModelAdmin[M]):
     change_actions: tuple[str, ...] = tuple()
 
     @override
@@ -29,7 +31,7 @@ class DHModelAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgume
         return path(
             f"<path:pk>/{name}/",
             self.admin_site.admin_view(getattr(self, name)),
-            name=get_admin_page(self.model, name, prefix=""),  # pyright: ignore[reportUnknownArgumentType,reportUnknownMemberType]
+            name=get_admin_page(self.model, name, prefix=""),
         )
 
     def action_buttons(self, obj: Model) -> str:
