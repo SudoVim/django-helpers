@@ -13,7 +13,7 @@ from typing_extensions import override
 from django_helpers.links import get_admin_add_url, get_admin_model_path, get_admin_page
 
 
-class DHModelAdmin(admin.ModelAdmin):
+class DHModelAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     change_actions: tuple[str, ...] = tuple()
 
     @override
@@ -27,9 +27,9 @@ class DHModelAdmin(admin.ModelAdmin):
         Generate a custom route.
         """
         return path(
-            f"{get_admin_model_path(self.model)}<int:pk>/{name}/",
+            f"{get_admin_model_path(self.model)}<int:pk>/{name}/",  # pyright: ignore[reportUnknownArgumentType,reportUnknownMemberType]
             self.admin_site.admin_view(getattr(self, name)),
-            name=get_admin_page(self.model, name, prefix=""),
+            name=get_admin_page(self.model, name, prefix=""),  # pyright: ignore[reportUnknownArgumentType,reportUnknownMemberType]
         )
 
     def action_buttons(self, obj: Model) -> str:

@@ -25,7 +25,9 @@ def get_admin_change_url(obj: models.Model) -> str:
     return reverse(get_admin_page(obj.__class__, "change"), args=(obj.pk,))
 
 
-def get_admin_list_url(model_type: type[models.Model], query_params: dict[str, str] | None = None) -> str:
+def get_admin_list_url(
+    model_type: type[models.Model], query_params: dict[str, str] | None = None
+) -> str:
     """
     Get the admin list URL for the given model type.
     """
