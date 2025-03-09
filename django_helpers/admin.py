@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Any, TypeVar
+from typing import Any
 
 from django.contrib import admin
 from django.db.models import Model
@@ -12,10 +12,8 @@ from typing_extensions import override
 
 from django_helpers.links import get_admin_add_url, get_admin_model_path, get_admin_page
 
-M = TypeVar("M", bound=Model)
 
-
-class DHModelAdmin(admin.ModelAdmin[M]):
+class DHModelAdmin(admin.ModelAdmin):
     change_actions: tuple[str, ...] = tuple()
 
     @override
@@ -114,6 +112,16 @@ class DHModelAdmin(admin.ModelAdmin[M]):
         *model_type* and *query_params*.
         """
         return self.redirect(get_admin_add_url(model_type, query_params=query_params))
+
+    def generate_link(self, href: str, text: str | None = None) -> str:
+        """
+        Generate a formatted link.
+        """
+        return format_html(
+            '<a href="{}">{}</a>',
+            href,
+            text or href,
+        )
 
     def generate_table(
         self, headers: Iterable[str], data: Iterable[Iterable[Any]]
