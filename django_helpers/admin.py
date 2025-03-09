@@ -10,7 +10,7 @@ from django.utils.html import format_html, format_html_join
 from django.utils.text import capfirst
 from typing_extensions import override
 
-from django_helpers.links import get_admin_add_url, get_admin_model_path, get_admin_page
+from django_helpers.links import get_admin_add_url, get_admin_page
 
 
 class DHModelAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
@@ -27,7 +27,7 @@ class DHModelAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgume
         Generate a custom route.
         """
         return path(
-            f"{get_admin_model_path(self.model)}<int:pk>/{name}/",  # pyright: ignore[reportUnknownArgumentType,reportUnknownMemberType]
+            f"<path:pk>/{name}/",
             self.admin_site.admin_view(getattr(self, name)),
             name=get_admin_page(self.model, name, prefix=""),  # pyright: ignore[reportUnknownArgumentType,reportUnknownMemberType]
         )
