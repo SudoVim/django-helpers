@@ -1,7 +1,7 @@
 import secrets
-from collections.abc import Iterable, Iterator, Mapping, MutableMapping
+from collections.abc import Iterator, Mapping, MutableMapping
 from decimal import Decimal
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from django.contrib.admin.options import BaseModelAdmin
 from django.db.models import Model
@@ -113,21 +113,27 @@ class FilterProcessor:
         self.field_map = {}
 
     def process_filters(
-        self, attrs: dict[str, Any], fields: Iterable[str] | None = None
-    ) -> Iterator[str]:
+        self,
+        attrs: dict[str, Any],
+        field_name: str,
+    ) -> None:
+        fields = cast(tuple[str] | None, attrs.get(field_name))
         if fields is None:
             return
 
-        for field in fields:
-            field_name, field_filter = matches_filter(self.filter_map, field)
-            if field_filter is None:
-                yield field_name
-                continue
+        def iterate_fields(fields: tuple[str]) -> Iterator[str]:
+            for field in fields:
+                field_name, field_filter = matches_filter(self.filter_map, field)
+                if field_filter is None:
+                    yield field_name
+                    continue
 
-            if field_name in self.field_map:
-                return self.field_map[field_name]
+                if field_name in self.field_map:
+                    yield self.field_map[field_name]
 
-            filter_fcn_name = f"{field_name}_{secrets.token_hex(4)}"
-            self.field_map[field_name] = filter_fcn_name
-            attrs[filter_fcn_name] = field_filter
-            yield filter_fcn_name
+                filter_fcn_name = f"{field_name}_{secrets.token_hex(4)}"
+                self.field_map[field_name] = filter_fcn_name
+                attrs[filter_fcn_name] = field_filter
+                yield filter_fcn_name
+
+        attrs[field_name] = tuple(iterate_fields(fields))

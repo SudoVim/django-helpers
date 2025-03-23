@@ -28,33 +28,23 @@ class DHBaseModelMeta(forms.MediaDefiningClass):  # pyright: ignore[reportUnknow
             filter_map = attrs["FILTER_MAP"]
 
         filter_processor = FilterProcessor(filter_map or DEFAULT_FILTER_MAP)  # pyright: ignore[reportUnknownArgumentType]
+        filter_processor.process_filters(
+            attrs,
+            "fields",
+        )
+        filter_processor.process_filters(
+            attrs,
+            "list_display",
+        )
+        filter_processor.process_filters(
+            attrs,
+            "readonly_fields",
+        )
         return super().__new__(  # pyright: ignore[reportUnknownVariableType,reportUnknownMemberType]
             mcs,
             name,
             bases,
-            dict(
-                attrs,
-                **dict(
-                    fields=tuple(
-                        filter_processor.process_filters(
-                            attrs,
-                            attrs.get("fields"),
-                        ),
-                    ),
-                    list_display=tuple(
-                        filter_processor.process_filters(
-                            attrs,
-                            attrs.get("list_display"),
-                        ),
-                    ),
-                    readonly_fields=tuple(
-                        filter_processor.process_filters(
-                            attrs,
-                            attrs.get("readonly_fields"),
-                        ),
-                    ),
-                ),
-            ),
+            attrs,
         )
 
 
