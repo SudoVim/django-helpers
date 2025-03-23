@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from typing import Any, TypeVar
 
+from django import forms
 from django.contrib import admin
 from django.db.models import Model
 from django.http import HttpRequest, HttpResponse
@@ -10,13 +11,56 @@ from django.utils.html import format_html, format_html_join
 from django.utils.text import capfirst
 from typing_extensions import override
 
+from django_helpers.admin_filters import DEFAULT_FILTER_MAP, FilterMap, FilterProcessor
 from django_helpers.links import get_admin_add_url, get_admin_page
 
 M = TypeVar("M", bound=Model)
 
 
-class DHModelAdmin(admin.ModelAdmin[M]):
+class DHBaseModelMeta(forms.MediaDefiningClass):  # pyright: ignore[reportUnknownMemberType,reportUntypedBaseClass,reportAttributeAccessIssue]
+    def __new__(mcs, name: str, bases: list[type], attrs: dict[str, Any]) -> type:  # pyright: ignore[reportSelfClsParameterName]
+        filter_map = None
+        for base in bases:
+            if hasattr(base, "FILTER_MAP"):
+                filter_map = base.FILTER_MAP  # pyright: ignore[reportUnknownMemberType,reportUnknownVariableType]
+
+        if "FILTER_MAP" in attrs:
+            filter_map = attrs["FILTER_MAP"]
+
+        filter_processor = FilterProcessor(filter_map or DEFAULT_FILTER_MAP)  # pyright: ignore[reportUnknownArgumentType]
+        return super().__new__(  # pyright: ignore[reportUnknownVariableType,reportUnknownMemberType]
+            mcs,
+            name,
+            bases,
+            dict(
+                attrs,
+                **dict(
+                    fields=tuple(
+                        filter_processor.process_filters(
+                            attrs,
+                            attrs.get("fields"),
+                        ),
+                    ),
+                    list_display=tuple(
+                        filter_processor.process_filters(
+                            attrs,
+                            attrs.get("list_display"),
+                        ),
+                    ),
+                    readonly_fields=tuple(
+                        filter_processor.process_filters(
+                            attrs,
+                            attrs.get("readonly_fields"),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+
+class DHModelAdmin(admin.ModelAdmin[M], metaclass=DHBaseModelMeta):
     change_actions: tuple[str, ...] = tuple()
+    FILTER_MAP: FilterMap = DEFAULT_FILTER_MAP
 
     @override
     def get_urls(self) -> list[URLPattern]:
@@ -149,3 +193,7 @@ class DHModelAdmin(admin.ModelAdmin[M]):
                 ],
             ),
         )
+
+
+class DHModelTabularInline(admin.TabularInline[M], metaclass=DHBaseModelMeta):
+    FILTER_MAP: FilterMap = DEFAULT_FILTER_MAP
