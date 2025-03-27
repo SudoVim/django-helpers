@@ -73,6 +73,9 @@ def number_filter(field_name: str) -> Filter:
         except TypeError:
             return "--"
 
+        val_str = str(val)
+        if val_str.startswith("0E"):
+            return "0"
         return str(val).rstrip("0").rstrip(".")
 
     return filter
@@ -130,6 +133,7 @@ class FilterProcessor:
 
                 if field_name in self.field_map:
                     yield self.field_map[field_name]
+                    continue
 
                 filter_fcn_name = f"{field_name}_{secrets.token_hex(4)}"
                 self.field_map[field_name] = filter_fcn_name
