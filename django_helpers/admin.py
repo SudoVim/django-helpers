@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import Any, TypeVar
 
 from django import forms
@@ -40,6 +40,7 @@ class DHBaseModelMeta(forms.MediaDefiningClass):  # pyright: ignore[reportUnknow
             attrs,
             "readonly_fields",
         )
+        attrs["filter_field_map"] = filter_processor.field_map
         return super().__new__(  # pyright: ignore[reportUnknownVariableType,reportUnknownMemberType]
             mcs,
             name,
@@ -51,6 +52,18 @@ class DHBaseModelMeta(forms.MediaDefiningClass):  # pyright: ignore[reportUnknow
 class DHModelAdmin(admin.ModelAdmin[M], metaclass=DHBaseModelMeta):
     change_actions: tuple[str, ...] = tuple()
     FILTER_MAP: FilterMap = DEFAULT_FILTER_MAP
+    filter_field_map: Mapping[str, str] = {}
+
+    def __init__(self, model: type[M], admin_site: admin.AdminSite | None) -> None:
+        super().__init__(model, admin_site)
+
+        model_fields = {f.name for f in model._meta.fields}
+        for sortable_field in set(self.filter_field_map.keys()) & model_fields:
+            setattr(
+                getattr(self.__class__, self.filter_field_map[sortable_field]),
+                "admin_order_field",
+                sortable_field,
+            )
 
     @override
     def get_urls(self) -> list[URLPattern]:
