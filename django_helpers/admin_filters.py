@@ -37,12 +37,8 @@ def dollars_filter(field_name: str) -> Filter:
         except TypeError:
             return "--"
 
-        return "".join(
-            [
-                "$",
-                str(val.quantize(Decimal("0.01"))),
-            ]
-        )
+        quantized = val.quantize(Decimal("0.01"))
+        return f"${quantized:,}"
 
     return filter
 
