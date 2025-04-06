@@ -12,7 +12,7 @@ from django.utils.text import capfirst
 from typing_extensions import override
 
 from django_helpers.admin_filters import DEFAULT_FILTER_MAP, FilterMap, FilterProcessor
-from django_helpers.links import get_admin_add_url, get_admin_page
+from django_helpers.links import get_admin_add_url, get_admin_change_url, get_admin_page
 
 M = TypeVar("M", bound=Model)
 
@@ -161,6 +161,16 @@ class DHModelAdmin(admin.ModelAdmin[M], metaclass=DHBaseModelMeta):
         *model_type* and *query_params*.
         """
         return self.redirect(get_admin_add_url(model_type, query_params=query_params))
+
+    def redirect_change_model(
+        self,
+        obj: Model,
+    ) -> HttpResponse:
+        """
+        Return a response that redirects a user to the "change" page for the
+        given *obj* entry.
+        """
+        return self.redirect(get_admin_change_url(obj))
 
     def generate_link(self, href: str, text: str | None = None) -> str:
         """
