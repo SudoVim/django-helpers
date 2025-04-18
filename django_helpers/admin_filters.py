@@ -72,7 +72,10 @@ def number_filter(field_name: str) -> Filter:
         val_str = str(val)
         if val_str.startswith("0E"):
             return "0"
-        return str(val).rstrip("0").rstrip(".")
+
+        if "." not in val_str:
+            return val_str
+        return str(val_str).rstrip("0").rstrip(".")
 
     return filter
 
