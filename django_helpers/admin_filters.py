@@ -95,7 +95,7 @@ def matches_filter(
         return field_name, None
 
     field_filter = filter_map[filter_str](field_name)
-    field_filter.short_description = field_name  # pyright: ignore[reportFunctionMemberAccess]
+    field_filter.short_description = field_name.replace("_", " ").capitalize()  # pyright: ignore[reportFunctionMemberAccess]
     return field_name, field_filter
 
 
