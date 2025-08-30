@@ -29,34 +29,42 @@ def get_val(self: BaseModelAdmin[Model], obj: Model, field_name: str) -> Any:
     return None
 
 
+def format_dollars(raw: Any) -> str:
+    try:
+        val = Decimal(raw)
+
+    except TypeError:
+        return "--"
+
+    quantized = val.quantize(Decimal("0.01"))
+    return f"${quantized:,}"
+
+
 def dollars_filter(field_name: str) -> Filter:
     def filter(self: BaseModelAdmin[Model], obj: Model) -> Any:
-        try:
-            val = Decimal(get_val(self, obj, field_name))
-
-        except TypeError:
-            return "--"
-
-        quantized = val.quantize(Decimal("0.01"))
-        return f"${quantized:,}"
+        return format_dollars(get_val(self, obj, field_name))
 
     return filter
 
 
+def format_percent(raw: Any) -> str:
+    try:
+        val = Decimal(raw)
+
+    except TypeError:
+        return "--"
+
+    return "".join(
+        [
+            str((val * 100).quantize(Decimal("0.01"))),
+            "%",
+        ]
+    )
+
+
 def percent_filter(field_name: str) -> Filter:
     def filter(self: BaseModelAdmin[Model], obj: Model) -> Any:
-        try:
-            val = Decimal(get_val(self, obj, field_name))
-
-        except TypeError:
-            return "--"
-
-        return "".join(
-            [
-                str((val * 100).quantize(Decimal("0.01"))),
-                "%",
-            ]
-        )
+        return format_percent(get_val(self, obj, field_name))
 
     return filter
 
